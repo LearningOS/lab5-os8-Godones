@@ -44,7 +44,7 @@ pub fn sys_mutex_create(blocking: bool) -> isize {
 pub fn sys_mutex_lock(mutex_id: usize) -> isize {
     let process = current_process();
     let mut process_inner = process.inner_exclusive_access();
-    if process_inner.enable_lock_detect && process_inner.available_mutex[mutex_id] == 0 {
+    if process_inner.enable_lock_detect && process_inner.check_deadlock(0,mutex_id) {
         return -0xDEAD;
     }
     process_inner.available_mutex[mutex_id] -= 1;
@@ -105,7 +105,7 @@ pub fn sys_semaphore_down(sem_id: usize) -> isize {
     let mut process_inner = process.inner_exclusive_access();
 
     let sem = Arc::clone(process_inner.semaphore_list[sem_id].as_ref().unwrap());
-    if process_inner.enable_lock_detect && process_inner.available_semaphore[sem_id]-1<= sem.inner.exclusive_access().wait_queue.len(){
+    if process_inner.enable_lock_detect && process_inner.check_deadlock(1,sem_id){
         return -0xDEAD;
     }
     process_inner.available_semaphore[sem_id] -= 1;

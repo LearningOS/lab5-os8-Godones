@@ -66,6 +66,19 @@ impl ProcessControlBlockInner {
         self.tasks[tid].as_ref().unwrap().clone()
     }
 
+    pub fn check_deadlock(&self,lock_type:u8,id:usize)->bool{
+        match lock_type {
+            0 => {
+                self.available_mutex[id]==0
+            }
+            1 => {
+                let sem = self.semaphore_list[id].as_ref().unwrap();
+                self.available_semaphore[id]-1 <= sem.inner.exclusive_access().wait_queue.len()
+            }
+            _ => false,
+        }
+    }
+
 }
 
 impl ProcessControlBlock {
