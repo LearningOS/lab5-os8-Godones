@@ -74,11 +74,11 @@ pub fn main() -> i32 {
     enable_deadlock_detect(true);
     assert_eq!(semaphore_create(THREAD_N) as usize, SEM_BARRIER);
     for _ in 0..THREAD_N {
-        semaphore_down(SEM_BARRIER);
+        semaphore_down(SEM_BARRIER);//p()
     }
 
     for n in RES_NUM {
-        semaphore_create(n);
+        semaphore_create(n); //每个资源的信号量
     }
     let mut tids = [0; THREAD_N];
 
@@ -88,7 +88,7 @@ pub fn main() -> i32 {
 
     sleep(500);
     for _ in 0..THREAD_N {
-        semaphore_up(SEM_BARRIER);
+        semaphore_up(SEM_BARRIER);//v()
     }
     let mut failed = 0;
     for tid in tids {

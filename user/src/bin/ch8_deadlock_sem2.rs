@@ -31,8 +31,8 @@ fn try_sem_down(sem_id: usize) {
 
 fn deadlock_test() {
     let id = (gettid() - 1) as usize;
-    assert_eq!(semaphore_down(ALLOC[id]), 0);
-    semaphore_down(0);
+    assert_eq!(semaphore_down(ALLOC[id]), 0);//p(2)
+    semaphore_down(0); //p(0)
     if let Some(sem_id) = REQUEST[id] {
         try_sem_down(sem_id);
         semaphore_up(sem_id);
@@ -46,7 +46,7 @@ pub fn main() -> i32 {
     enable_deadlock_detect(true);
     semaphore_create(THREAD_N);
     for _ in 0..THREAD_N {
-        semaphore_down(0);
+        semaphore_down(0);//p()
     }
 
     for n in RES_NUM {
@@ -60,7 +60,7 @@ pub fn main() -> i32 {
 
     sleep(1000);
     for _ in 0..THREAD_N {
-        semaphore_up(0);
+        semaphore_up(0);//v()
     }
 
     let mut failed = 0;
