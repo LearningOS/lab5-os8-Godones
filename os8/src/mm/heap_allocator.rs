@@ -47,5 +47,15 @@ pub fn heap_test() {
     }
     assert!(bss_range.contains(&(v.as_ptr() as usize)));
     drop(v);
+
+    struct S{
+        data:Box<[u8;4096]>
+    }
+    let s = S{
+        data:Box::new([0;4096])
+    };
+    assert!(bss_range.contains(&(s.data.as_ptr() as usize)));
+
+
     info!("heap_test passed!");
 }

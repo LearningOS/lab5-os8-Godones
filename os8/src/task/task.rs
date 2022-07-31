@@ -95,6 +95,10 @@ impl TaskControlBlock {
         inner.memory_set.token()
     }
 
+    pub fn get_tid(&self) -> usize {
+        let inner = self.inner.exclusive_access();
+        inner.res.as_ref().unwrap().tid
+    }
     pub fn create_kthread(f: fn()) -> Self {
         use crate::mm::PhysAddr;
         let process = ProcessControlBlock::kernel_process();

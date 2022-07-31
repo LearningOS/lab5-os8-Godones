@@ -27,6 +27,8 @@ extern crate log;
 
 extern crate alloc;
 
+use alloc::vec::Vec;
+
 #[macro_use]
 mod console;
 mod config;

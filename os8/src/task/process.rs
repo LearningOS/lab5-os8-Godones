@@ -1,3 +1,4 @@
+use alloc::collections::BTreeMap;
 use super::id::RecycleAllocator;
 use super::{add_task, pid_alloc, PidHandle, TaskControlBlock};
 use crate::fs::{File, Stdin, Stdout};
@@ -31,8 +32,14 @@ pub struct ProcessControlBlockInner {
     pub semaphore_list: Vec<Option<Arc<Semaphore>>>,
     pub condvar_list: Vec<Option<Arc<Condvar>>>,
     pub enable_lock_detect: bool, //是否开启死锁检测
-    pub available_mutex: Vec<usize>,
-    pub available_semaphore: Vec<usize>,
+
+    pub allocated_mutex: [Option<usize>;30],//锁被哪个线程所有
+    pub request_mutex:[Option<usize>;30],   //线程想拥有哪个锁
+
+    pub available_semaphore: [usize;30], //可用信号量
+    pub allocated_semaphore: [[usize;30];30],//每个线程拥有的各个信号量的数量
+    pub request_semaphore:[[usize;30];30],//线程想拥有的各个信号量的数量
+
 }
 
 impl ProcessControlBlockInner {
@@ -66,18 +73,6 @@ impl ProcessControlBlockInner {
         self.tasks[tid].as_ref().unwrap().clone()
     }
 
-    pub fn check_deadlock(&self,lock_type:u8,id:usize)->bool{
-        match lock_type {
-            0 => {
-                self.available_mutex[id]==0
-            }
-            1 => {
-                let sem = self.semaphore_list[id].as_ref().unwrap();
-                self.available_semaphore[id]-1 <= sem.inner.exclusive_access().wait_queue.len()
-            }
-            _ => false,
-        }
-    }
 
 }
 
@@ -115,8 +110,11 @@ impl ProcessControlBlock {
                     semaphore_list: Vec::new(),
                     condvar_list: Vec::new(),
                     enable_lock_detect: false,
-                    available_mutex: Vec::new(),
-                    available_semaphore: Vec::new(),
+                    allocated_mutex: [None;30],
+                    request_mutex:[None;30],
+                    available_semaphore: [0;30],
+                    allocated_semaphore: [[0;30];30],
+                    request_semaphore: [[0;30];30],
                 })
             },
         });
@@ -239,8 +237,11 @@ impl ProcessControlBlock {
                     semaphore_list: Vec::new(),
                     condvar_list: Vec::new(),
                     enable_lock_detect: false,
-                    available_mutex: Vec::new(),
-                    available_semaphore: Vec::new(),
+                    allocated_mutex: [None;30],
+                    request_mutex:[None;30],
+                    available_semaphore: [0;30],
+                    allocated_semaphore: [[0;30];30],
+                    request_semaphore: [[0;30];30],
                 })
             },
         });
@@ -296,8 +297,11 @@ impl ProcessControlBlock {
                     semaphore_list: Vec::new(),
                     condvar_list: Vec::new(),
                     enable_lock_detect: false,
-                    available_mutex: Vec::new(),
-                    available_semaphore: Vec::new(),
+                    allocated_mutex: [None;30],
+                    request_mutex:[None;30],
+                    available_semaphore: [0;30],
+                    allocated_semaphore: [[0;30];30],
+                    request_semaphore: [[0;30];30],
                 })
             },
         });
